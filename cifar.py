@@ -12,6 +12,8 @@ from fuel.datasets.cifar10 import CIFAR10
 
 
 def load_dataset():
+    # loading the data from CIFAR10 and dividing it into 
+    # training, validation and test sets
     
     cifar_train = CIFAR10(("train",), subset=slice(None, 40000))
     cifar_validation = CIFAR10(("train",), subset=slice(40000, None))
@@ -26,7 +28,9 @@ def load_dataset():
 
     return X_train, Y_train, X_val, Y_val, X_test, Y_test
 
+
 def build_net(input_var=None, batchsize=100):
+    # the architecture of the network
 
     network = lasagne.layers.InputLayer(shape=(batchsize, 3, 32, 32), 
                                         input_var=input_var)
@@ -37,7 +41,9 @@ def build_net(input_var=None, batchsize=100):
 
     network = lasagne.layers.MaxPool2DLayer(network, pool_size=(2, 2))
     
-    network = lasagne.layers.Conv2DLayer(network, num_filters=32, filter_size=(5, 5), nonlinearity=lasagne.nonlinearities.rectify)
+    network = lasagne.layers.Conv2DLayer(network, num_filters=32, 
+                                        filter_size=(5, 5),
+                                        nonlinearity=lasagne.nonlinearities.rectify)
 
     network = lasagne.layers.MaxPool2DLayer(network, pool_size=(2, 2))
 
@@ -51,7 +57,10 @@ def build_net(input_var=None, batchsize=100):
 
     return network
 
+
 def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
+    # partitioning the input data into minibatches
+
     assert len(inputs) == len(targets)
 
     if shuffle:
@@ -67,6 +76,9 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 
 def main(num_epochs=175, batchsize=100):
+    # both the number of epochs and the size of a minibatch 
+    # were found experimentally
+
     print "Loading data..."
     X_train, Y_train, X_val, Y_val, X_test, Y_test = load_dataset()
 
@@ -127,6 +139,7 @@ def main(num_epochs=175, batchsize=100):
             val_acc / val_batches * 100))
 
         if (epoch + 1) % 20 == 0:
+            # decreasing learning rate after each 20 epochs
             learning_rate /= 2.0
             updates = lasagne.updates.nesterov_momentum(loss, params, learning_rate=learning_rate, momentum=0.9)
             train_fn = theano.function([input_var, target_var], loss, updates=updates)
@@ -147,6 +160,8 @@ def main(num_epochs=175, batchsize=100):
         test_acc / test_batches * 100))
 
 
+    # saving the results to a .txt file
+
     results_file = open("results.txt", "w")
     results = []
     labels = []
@@ -160,6 +175,7 @@ def main(num_epochs=175, batchsize=100):
 
     for result, label in zip(results, labels):
         results_file.write(str(result) + " " + str(label) + "\n")
+
 
 if __name__ == "__main__":
     main()
