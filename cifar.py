@@ -134,6 +134,7 @@ def main(num_epochs=175, batchsize=100):
     test_err = 0
     test_acc = 0
     test_batches = 0
+
     for batch in iterate_minibatches(X_test, Y_test, batchsize, shuffle=False):
         inputs, targets = batch
         err, acc = val_fn(inputs, targets)
@@ -144,6 +145,21 @@ def main(num_epochs=175, batchsize=100):
     print("  test loss:\t\t\t{:.6f}".format(test_err / test_batches))
     print("  test accuracy:\t\t{:.2f} %".format(
         test_acc / test_batches * 100))
+
+
+    results_file = open("results.txt", "w")
+    results = []
+    labels = []
+
+    for batch in iterate_minibatches(X_test, Y_test, batchsize, shuffle=False):
+        inputs, targets = batch
+        labels += list(targets)
+        outputs = lasagne.layers.get_output(network, inputs=inputs, deterministic=True)
+        predictions = T.argmax(outputs, axis=1)
+        results += list(predictions.eval())
+
+    for result, label in zip(results, labels):
+        results_file.write(str(result) + " " + str(label) + "\n")
 
 if __name__ == "__main__":
     main()
